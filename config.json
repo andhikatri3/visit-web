@@ -1,0 +1,4 @@
+{
+  "strategies": ["mobile", "desktop"],
+  "delay_between_requests_seconds": 2
+}

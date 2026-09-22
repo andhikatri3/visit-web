@@ -1,0 +1,51 @@
+name: Website Performance Check
+
+on:
+  # Waktu di bawah dalam UTC. WIB = UTC+7.
+  # 23:00 UTC = 06:00 WIB, 02:00 UTC = 09:00 WIB, dst.
+  # 12x sehari, disebar tiap ~2.0 jam
+  schedule:
+    - cron: "0 17 * * *"  # 00:00 WIB
+    - cron: "0 19 * * *"  # 02:00 WIB
+    - cron: "0 21 * * *"  # 04:00 WIB
+    - cron: "0 23 * * *"  # 06:00 WIB
+    - cron: "0 1 * * *"  # 08:00 WIB
+    - cron: "0 3 * * *"  # 10:00 WIB
+    - cron: "0 5 * * *"  # 12:00 WIB
+    - cron: "0 7 * * *"  # 14:00 WIB
+    - cron: "0 9 * * *"  # 16:00 WIB
+    - cron: "0 11 * * *"  # 18:00 WIB
+    - cron: "0 13 * * *"  # 20:00 WIB
+    - cron: "0 15 * * *"  # 22:00 WIB
+  workflow_dispatch: {}   # supaya bisa dijalankan manual dari tab Actions
+
+permissions:
+  contents: write
+
+jobs:
+  check-performance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run performance check
+        env:
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+        run: python performance-checker/check_performance.py
+
+      - name: Commit hasil ke repo
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add performance-checker/performance_log.csv
+          git diff --cached --quiet || git commit -m "Update performance log $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

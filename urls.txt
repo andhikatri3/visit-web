@@ -1,0 +1,24 @@
+# Daftar URL yang mau dicek performanya.
+# Satu URL per baris.
+# Baris yang diawali tanda # akan diabaikan (bisa dipakai untuk catatan/nonaktifkan sementara).
+
+https://penunggul.kim.id
+https://penunggul.desa.id
+https://penunggul.kim.id/berita/read/desa-penunggul-raih-juara-harapan-180957-351421201001
+https://penunggul.kim.id/berita/read/penunggul-bersholawat-meriahkan-per80693-351421201001
+https://penunggul.kim.id/berita/read/desa-penunggul-ikuti-lomba-kampung-80754-351421201001
+https://penunggul.kim.id/berita/read/gebyar-seni-budaya-desa-penunggul-h80972-351421201001/0
+https://penunggul.kim.id/berita/read/bkb-anggrek-1-desa-penunggul-gelar-80750-351421201001/0
+https://penunggul.kim.id/berita/read/semarak-mpls-sdn-penunggul-sambut-p80695-351421201001/0
+https://penunggul.kim.id/berita/read/bkb-anggrek-1-desa-penunggul-gelar-79252-351421201001/0
+https://penunggul.kim.id/berita/read/pj-kepala-desa-penunggul-hadiri-san79251-351421201001/0
+https://penunggul.kim.id/berita/read/sinergi-membangun-desa-musyawarah-d79249-351421201001/0
+https://penunggul.kim.id/berita/read/bkb-anggrek-1-desa-penunggul-gelar-79246-351421201001/0
+https://penunggul.kim.id/berita/read/pj-kepala-desa-penunggul-hadiri-pel79247-351421201001/0
+https://penunggul.kim.id/berita/read/bkb-anggrek-1-desa-penunggul-gelar-63999-351421201001/0
+https://penunggul.kim.id/berita/read/sosialisasi-revitalisasi-kim-kabupa60739-351421201001/2
+https://penunggul.kim.id/berita/read/pkk-desa-penunggul-aktif-dukung-pel79245-351421201001/2
+https://penunggul.kim.id/berita/read/kader-desa-penunggul-tingkatkan-kom65085-351421201001/2
+https://penunggul.kim.id/berita/read/edukasi-rehabilitasi-mangrove-di-de62330-351421201001/2
+https://penunggul.kim.id/berita/read/pertemuan-rutin-pkk-desa-penunggul-62328-351421201001/2
+https://penunggul.kim.id/berita/read/pembinaan-bkb-anggrek-1-desa-penung62069-351421201001/2
