@@ -29,7 +29,7 @@ CSV_FILE = os.path.join(BASE_DIR, "performance_log.csv")
 
 # API key opsional tapi sangat disarankan (gratis, kuota 25.000/hari).
 # Cara dapat key: https://developers.google.com/speed/docs/insights/v5/get-started
-API_KEY = os.environ.get("PAGESPEED_API_KEY", "")
+API_KEY = os.environ.get("PAGESPEED_API_KEY", "AIzaSyC4LFLmaNk25sh8kSQCZmuxE58mzfcoImk")
 
 DEFAULT_CONFIG = {
     "strategies": ["mobile", "desktop"],

@@ -1,7 +1,22 @@
 # Website Performance Checker
 
-Cek performa beberapa website otomatis, jadwal fleksibel, pakai Google
-PageSpeed Insights API. Hasil disimpan ke `performance_log.csv`.
+Cek performa beberapa website. Hasil disimpan ke `performance_log.csv`.
+
+Ada **dua script**, pakai salah satu sesuai situasi:
+
+| Script | Cara kerja | Kapan dipakai |
+|---|---|---|
+| `check_performance.py` | Minta server Google (PageSpeed Insights API) yang mengakses situsmu | Situs bisa diakses publik dari internet manapun |
+| `check_performance_local.py` | Chrome di komputermu sendiri yang mengakses situsmu (Lighthouse CLI) | Situs cuma bisa diakses dari jaringan Indonesia/lokal — **ini yang dipakai untuk penunggul.kim.id** |
+
+> **Kenapa dua script?** PageSpeed Insights API "menyuruh" server Google
+> di luar negeri untuk mengunjungi situsmu — jadi walau script dijalankan
+> dari komputer di Indonesia, yang benar-benar mengakses situs tetaplah
+> server Google. Kalau situsnya memblokir akses dari luar Indonesia
+> (seperti penunggul.kim.id, yang di-hosting di infrastruktur Kementerian
+> KOMINFO), request itu akan selalu gagal. `check_performance_local.py`
+> memakai Chrome yang jalan langsung di komputermu, jadi request-nya
+> benar-benar datang dari jaringan Indonesia.
 
 ## Struktur file
 
@@ -9,31 +24,25 @@ PageSpeed Insights API. Hasil disimpan ke `performance_log.csv`.
 |---|---|---|
 | `urls.txt` | Daftar URL yang dicek | ✅ Ya, kalau mau tambah/kurangi link |
 | `config.json` | Strategi (mobile/desktop) & jeda antar-request | Opsional |
-| `check_performance.py` | Kode utama (baca 2 file di atas) | ❌ Tidak perlu diedit lagi |
-| `generate_cron.py` | Bantu bikin jadwal cron otomatis | Dipakai kalau mau ganti frekuensi |
-| `.github/workflows/performance-check.yml` | Jadwal otomatis di GitHub Actions | ✅ Ya, kalau mau ganti frekuensi |
+| `check_performance.py` | Versi PageSpeed API (server Google) | ❌ |
+| `check_performance_local.py` | Versi Lighthouse lokal (Chrome kamu) | ❌ |
 
-## Setup awal (sekali saja)
+## Setup untuk check_performance_local.py (dipakai untuk penunggul.kim.id)
 
-1. Upload seluruh folder ini ke repo GitHub baru (bisa privat):
-   ```bash
-   cd performance-checker
-   git init
-   git add .
-   git commit -m "Initial setup"
-   git branch -M main
-   git remote add origin https://github.com/USERNAME/NAMA-REPO.git
-   git push -u origin main
+1. **Install Node.js** kalau belum ada: https://nodejs.org (pilih versi LTS), restart PowerShell setelah install.
+2. **Install Lighthouse CLI** (sekali saja):
+   ```powershell
+   npm install -g lighthouse
    ```
+3. Pastikan **Google Chrome** sudah terinstall di komputer (biasanya sudah ada).
+4. Tidak perlu API key untuk script ini — Lighthouse lokal gratis tanpa batas kuota.
 
-2. **Buat API key PageSpeed Insights** (gratis, wajib kalau cek lebih dari
-   1 URL):
-   - https://console.cloud.google.com/apis/credentials
-   - Buat project → Enable "PageSpeed Insights API" → Create credentials → API key
+## Setup untuk check_performance.py (opsional, kalau nanti ada situs lain yang publik)
 
-3. **Masukkan API key ke GitHub Secrets**:
-   - Repo → Settings → Secrets and variables → Actions → New repository secret
-   - Name: `PAGESPEED_API_KEY`, Value: (paste key kamu)
+**Buat API key PageSpeed Insights** (gratis):
+- https://console.cloud.google.com/apis/credentials
+- Buat project → Enable "PageSpeed Insights API" → Create credentials → **API key** (bukan OAuth client ID)
+- Key akan berformat `AIzaSy...`
 
 ## Mengatur jumlah link (urls.txt)
 
@@ -48,22 +57,29 @@ https://link-rotator-2.com
 Baris yang diawali `#` diabaikan (bisa dipakai untuk nonaktifkan sementara
 tanpa hapus). Commit & push perubahan, selesai — tidak perlu sentuh kode.
 
-## Mengatur frekuensi pengecekan
+## Cara menjalankan (manual, dari lokal)
 
-Frekuensi diatur lewat jadwal `cron` di
-`.github/workflows/performance-check.yml`. Supaya tidak perlu hitung
-manual konversi WIB↔UTC, pakai `generate_cron.py`:
+**Untuk penunggul.kim.id, pakai `check_performance_local.py`** (tidak
+butuh API key):
 
-```bash
-python generate_cron.py 8     # mau 8x sehari
-python generate_cron.py 4     # mau 4x sehari
-python generate_cron.py 12    # mau 12x sehari
+```powershell
+python check_performance_local.py
 ```
 
-Script akan cetak baris `schedule:` yang sudah dikonversi ke UTC dan
-disebar merata sepanjang hari. Copy hasilnya, paste ke
-`performance-check.yml` menggantikan bagian `schedule:` yang lama, lalu
-commit & push.
+Catatan: versi Lighthouse lokal ini **lebih lambat** dari versi API
+(Chrome benar-benar membuka & merender tiap halaman), jadi wajar kalau
+satu URL butuh 10-30 detik. Untuk 1 URL x 2 strategi, total waktu
+sekitar 1 menit.
+
+---
+
+Kalau nanti ada URL lain yang bisa diakses publik dari internet biasa
+(bukan situs pemerintah/lokal), baru pakai versi API:
+
+```powershell
+$env:PAGESPEED_API_KEY = "AIzaSy...key-kamu"
+python check_performance.py
+```
 
 ## Menghitung kuota API
 
@@ -93,16 +109,52 @@ jalan (auto-commit ke repo). Kolom `url` membedakan tiap link.
 | performance_score | Skor performa 0-100 |
 | fcp / lcp / cls / speed_index / tbt | Metrik Core Web Vitals |
 
-## Menjalankan manual di lokal (opsional, untuk testing)
+## Deploy ke VPS (opsional, biar tidak perlu komputer nyala terus)
 
+**Syarat wajib:** VPS harus berlokasi/ber-IP Indonesia, karena masalahnya
+sama seperti PageSpeed API/GitHub Actions — kalau IP VPS bukan Indonesia,
+request tetap akan gagal walau dijalankan dari server yang menyala 24 jam.
+**Test dulu sebelum install apapun:**
 ```bash
-pip install requests
-export PAGESPEED_API_KEY="isi-api-key-kamu"
-python check_performance.py
+curl -I https://penunggul.kim.id
+```
+Kalau hasilnya timeout, cari VPS lain. Kalau berhasil (dapat response
+HTTP), lanjutkan setup.
+
+**Setup di VPS (Ubuntu/Debian):**
+```bash
+# Upload folder performance-checker ke VPS (scp, git clone, atau cara lain)
+cd performance-checker
+chmod +x setup_vps.sh
+bash setup_vps.sh
+```
+Script ini otomatis test akses, lalu install Node.js, Chrome, Lighthouse
+CLI, dan Python dependency.
+
+**Jadwalkan otomatis lewat cron** (misal 8x sehari, tiap 3 jam):
+```bash
+crontab -e
+```
+Tambahkan baris ini di editor yang terbuka:
+```
+0 */3 * * * cd /path/ke/performance-checker && python3 check_performance_local.py >> run.log 2>&1
+```
+Ganti `/path/ke/performance-checker` dengan lokasi folder sebenarnya di
+VPS (cek dengan `pwd` saat berada di folder itu). Simpan dan keluar.
+
+Cron di Linux pakai waktu VPS itu sendiri (bukan perlu konversi UTC
+manual seperti GitHub Actions), tapi cek dulu timezone VPS-nya:
+```bash
+timedatectl
+```
+Kalau bukan `Asia/Jakarta`, bisa diubah dengan:
+```bash
+sudo timedatectl set-timezone Asia/Jakarta
 ```
 
 ## Catatan
 
-- Jadwal cron GitHub Actions bisa meleset beberapa menit dari waktu pas — wajar untuk free tier.
+- Install dependency sekali saja: `pip install requests`
 - Tanpa API key, kemungkinan besar kena error 429 kalau cek lebih dari 1 URL.
-- Limit tambahan: 60 request per 100 detik per API key, dan ~240/menit per project — jeda `delay_between_requests_seconds` di `config.json` (default 2 detik) sudah menjaga supaya tidak tabrakan dengan limit ini.
+- Limit API: 25.000 request/hari, 60 request per 100 detik per API key — jeda `delay_between_requests_seconds` di `config.json` (default 2 detik) sudah menjaga supaya tidak tabrakan dengan limit ini.
+- Kalau ada URL tertentu yang gagal dengan error 400, sementara URL lain berhasil, cek juga apakah URL itu memang bisa diakses normal (bukan halaman error/pindah).
